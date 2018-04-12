@@ -1,0 +1,20 @@
+{
+  "name": "graqhql-direct",
+  "version": "0.0.1",
+  "author": "Dustin Hagemeier <dustin.hagemeier@nexum.de>",
+  "license": "MIT",
+  "scripts": {
+    "start": "node src/server.js",
+    "serve": "nodemon src/server.js"
+  },
+  "dependencies": {
+    "express": "^4.16.3",
+    "express-graphql": "^0.6.12",
+    "glob": "^7.1.2",
+    "graphql": "^0.13.2",
+    "mongodb": "^3.0.6"
+  },
+  "devDependencies": {
+    "nodemon": "^1.17.3"
+  }
+}
