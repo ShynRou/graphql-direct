@@ -1,6 +1,13 @@
 const { getGraphQLUpdateArgs, getMongoDbUpdateResolver, getGraphQLQueryArgs, getMongoDbQueryResolver } = require('graphql-to-mongodb');
 const { GraphQLList } = require('graphql');
 const AcknowledgeType = require('./acknowledge.type');
+const Auth = require('../auth/auth');
+
+
+const guard = (allowedScope, config) => {
+  config.resolve = Auth.guard(allowedScope, config.resolve);
+  return config;
+};
 
 const typeToArgs = (type, defaults = {}) => {
   let fields = type._typeConfig.fields;
@@ -71,6 +78,7 @@ const simpleQuery = (collection, inputType) => {
 };
 
 module.exports = {
+  guard,
   typeToArgs,
   simpleQuery,
   simpleCreateMutation,

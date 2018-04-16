@@ -1,10 +1,14 @@
 const express = require('express');
 const graphqlHTTP = require('express-graphql');
+const Auth = require('./auth/auth');
 const Schema = require('./schema/schema');
 const mongodb = require('mongodb');
 const config = require('./config.js');
+const cookieParser = require('cookie-parser');
 
 async function init(config) {
+  global.config = config;
+
   const MongoClient = mongodb.MongoClient;
   let db;
 
@@ -21,16 +25,46 @@ async function init(config) {
   }
 
   const app = express();
-  app.use('/graphql', graphqlHTTP({
-    schema: Schema,
-    rootValue: {},
-    graphiql: true,
-    context: {db},
-    formatError: (err) => {
-      console.log(err);
-      return err;
+  app.use(cookieParser());
+
+  app.get('/auth/login',
+    (request, response) => {
+      try {
+        const token = Auth.login('user', 'pass', () => []);
+
+        if (token) {
+          response.cookie('token', token);
+          return response.send({ ok: true });
+        }
+        else {
+          return response.send({ ok: false });
+        }
+      } catch (error) {
+        console.error(error);
+        return response.send({ ok: false });
+      }
     }
-  }));
+  );
+
+
+  app.use('/graphql',
+    graphqlHTTP(async (request, response, graphQLParams) => {
+      let token;
+      if (request.cookies && request.cookies.token) {
+        token = Auth.verify(request.cookies.token);
+      }
+      return {
+        schema: Schema,
+        rootValue: {},
+        graphiql: true,
+        context: { db, token },
+        formatError: (err) => {
+          console.log(err);
+          return err;
+        }
+      };
+    })
+  );
   app.listen(config.server.port);
   console.log('Running a GraphQL API server at localhost:4000/graphql');
 }
