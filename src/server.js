@@ -5,6 +5,7 @@ const Schema = require('./schema/schema');
 const mongodb = require('mongodb');
 const config = require('./config.js');
 const cookieParser = require('cookie-parser');
+const bodyParser = require('body-parser');
 
 async function init(config) {
   global.config = config;
@@ -13,12 +14,8 @@ async function init(config) {
   let db;
 
   try {
-    db = await new Promise(function (resolve, reject) {
-      MongoClient.connect(config.db.url, function (err, client) {
-        if (err) return reject(err);
-        return resolve(client.db(config.db.database));
-      });
-    });
+    let client = await MongoClient.connect(config.db.url);
+    db = client.db(config.db.database);
   } catch (error) {
     console.error(error);
     process.exit(1);
@@ -26,11 +23,12 @@ async function init(config) {
 
   const app = express();
   app.use(cookieParser());
+  app.use(bodyParser.json({ limit: '50mb' }));
 
-  app.get('/auth/login',
+  app.post('/auth/login',
     (request, response) => {
       try {
-        const token = Auth.login('user', 'pass', () => []);
+        const token = Auth.login(request.body.username, request.body.password, config.loginValidator);
 
         if (token) {
           response.cookie('token', token);
@@ -66,7 +64,7 @@ async function init(config) {
     })
   );
   app.listen(config.server.port);
-  console.log('Running a GraphQL API server at localhost:4000/graphql');
+  console.log('Running a GraphQL API server at localhost:'+config.server.port+'/graphql');
 }
 
 init(config);

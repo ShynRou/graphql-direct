@@ -1,6 +1,8 @@
 const jwt = require('jsonwebtoken');
 
 /**
+ * @param username
+ * @param password
  * @param loginValidator: (username, password) => string[] // return value is the users scopes, null/false/undefined === failed
  * @return {{login: login}}
  */
@@ -8,7 +10,7 @@ module.exports.login = (username, password, loginValidator) => {
   const scope = loginValidator(username, password);
 
   if (scope) {
-    if (!global.config.auth.privateKey)
+    if (!global.config.auth.secret)
       throw 'SECURITY CRASH: auth private key is not set';
 
     return jwt.sign(
@@ -17,7 +19,7 @@ module.exports.login = (username, password, loginValidator) => {
         scope,
         exp: Math.floor(Date.now() / 1000) + (global.config.auth.ttl || (60 * 60 * 24)),
       },
-      global.config.auth.privateKey
+      global.config.auth.secret
     );
   }
   else {
@@ -26,10 +28,10 @@ module.exports.login = (username, password, loginValidator) => {
 };
 
 module.exports.verify = (token) => {
-  if (!global.config.auth.privateKey)
+  if (!global.config.auth.secret)
     throw 'SECURITY CRASH: auth private key is not set';
 
-  return jwt.verify(token, global.config.auth.privateKey);
+  return jwt.verify(token, global.config.auth.secret);
 };
 
 module.exports.guard = (allowedScopes, callback) => {

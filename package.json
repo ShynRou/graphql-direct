@@ -8,6 +8,7 @@
     "serve": "nodemon src/server.js"
   },
   "dependencies": {
+    "body-parser": "^1.18.2",
     "cookie-parser": "^1.4.3",
     "express": "^4.16.3",
     "express-graphql": "^0.6.12",
