@@ -31,7 +31,12 @@ module.exports.verify = (token) => {
   if (!global.config.auth.secret)
     throw 'SECURITY CRASH: auth private key is not set';
 
-  return jwt.verify(token, global.config.auth.secret);
+  try {
+    return jwt.verify(token, global.config.auth.secret);
+  }
+  catch (e) {
+    console.error(e);
+  }
 };
 
 module.exports.guard = (allowedScopes, callback) => {

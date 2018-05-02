@@ -44,7 +44,9 @@ const simpleUpdateMutation = (collection, inputType) => {
         const result = await context.db.collection(collection).updateMany(filter, update, options);
         return result.result;
       },
-      true
+      {
+        differentOutputType: true,
+      }
     )
   }
 };
@@ -58,7 +60,9 @@ const simpleDeleteMutation = (collection, inputType) => {
       async (filter, projection, options, obj, args, context) => {
         return (await context.db.collection(collection).deleteMany(filter, options)).result;
       },
-      true
+      {
+        differentOutputType: true,
+      }
     )
   };
 };
